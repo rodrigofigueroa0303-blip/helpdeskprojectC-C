@@ -5,106 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión - Helpdesk C&C</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        body {
-            background: url('{{ asset('images/FondoLogin.png') }}') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Inter', sans-serif;
-        }
-        .overlay {
-            background: rgba(0, 33, 71, 0.85); /* Azul corporativo con transparencia */
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-        }
-        .login-card {
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(6px);
-            border-radius: 16px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-        }
-        .brand-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #002147; /* Azul C&C */
-        }
-        .brand-subtitle {
-            font-size: 0.9rem;
-            color: #555;
-        }
-        .btn-primary {
-            background-color: #002147;
-            transition: all 0.2s;
-        }
-        .btn-primary:hover {
-            background-color: #004080;
-        }
-    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center relative">
+<body class="font-sans antialiased min-h-screen bg-auth flex items-center justify-center p-4" style="--bg-img: url('{{ asset('images/FondoLogin4.jpeg') }}');">
+    <div class="w-full max-w-md animate-fade-in">
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-elevated border border-gray-100 p-8">
+            <div class="text-center mb-8">
+                <a href="https://consultorescyc.cl/" target="_blank" title="Ir al sitio Consultores C&C">
+                    <img src="{{ asset('images/logo-cyc.png') }}" 
+                        alt="C&C Consultores" 
+                        class="h-12 w-auto mx-auto mb-4 hover:opacity-80 transition-opacity">
+                </a>
+                <h1 class="text-2xl font-bold text-brand tracking-tight">Helpdesk C&C</h1>
+                <p class="text-sm text-gray-500 mt-1">Sistema de soporte y gestión interna</p>
+            </div>
 
-    <div class="overlay"></div>
+            @if (session('status'))
+                <div class="alert-success mb-4">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {{ session('status') }}
+                </div>
+            @endif
 
-    <div class="login-card w-full max-w-md mx-auto p-8 relative z-10">
-        <div class="text-center mb-8">
-            <a href="https://consultorescyc.cl/" target="_blank" title="Ir al sitio Consultores C&C">
-                <img src="{{ asset('images/logo-cyc.png') }}" 
-                    alt="C&C Consultores" 
-                    class="w-50 mx-auto mb-3 hover:scale-105 transition-transform duration-300">
-            </a>
-            <h1 class="brand-title">Helpdesk C&C</h1>
-            <p class="brand-subtitle">Sistema de soporte y gestión interna</p>
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5" for="email">
+                        Correo electrónico
+                    </label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
+                        class="input"
+                        placeholder="tu@correo.cl">
+                    @error('email')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5" for="password">
+                        Contraseña
+                    </label>
+                    <input id="password" type="password" name="password" required
+                        class="input"
+                        placeholder="••••••••">
+                    @error('password')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                        <input type="checkbox" name="remember" class="rounded border-gray-300 text-brand focus:ring-brand/30">
+                        Recuérdame
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-primary btn-lg w-full">
+                    Iniciar sesión
+                </button>
+            </form>
+
+            <p class="text-center text-xs text-gray-400 mt-8">
+                &copy; {{ date('Y') }} Consultores C&C - Todos los derechos reservados
+            </p>
         </div>
-
-        {{-- Mensajes flash --}}
-        @if (session('status'))
-            <div class="mb-4 font-medium text-sm text-green-600">
-                {{ session('status') }}
-            </div>
-        @endif
-
-        {{-- Formulario de login --}}
-        <form method="POST" action="{{ route('login') }}">
-            @csrf
-
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-semibold mb-2" for="email">
-                    Correo electrónico
-                </label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200">
-                @error('email')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-semibold mb-2" for="password">
-                    Contraseña
-                </label>
-                <input id="password" type="password" name="password" required
-                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200">
-                @error('password')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="flex items-center justify-between mb-4">
-                <label class="flex items-center text-sm text-gray-600">
-                    <input type="checkbox" name="remember" class="mr-2">
-                    Recuérdame
-                </label>
-            </div>
-
-            <button type="submit" class="w-full py-2 rounded-lg text-white font-semibold btn-primary">
-                Iniciar sesión
-            </button>
-        </form>
-
-        <p class="text-center text-sm text-gray-500 mt-6">
-            © {{ date('Y') }} Consultores C&C - Todos los derechos reservados
-        </p>
     </div>
 </body>
 </html>

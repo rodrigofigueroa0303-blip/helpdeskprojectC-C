@@ -15,7 +15,6 @@ class PasswordEntry extends Model
         'estado',
         'usuario',
         'correo',
-        'password_encrypted',
         'fecha_creacion',
         'fecha_eliminacion',
         'observaciones',

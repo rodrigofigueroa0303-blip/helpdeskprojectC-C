@@ -1,13 +1,14 @@
 @props([
   'type' => 'button',
-  'variant' => 'primary',  // primary | secondary | ghost | danger
-  'size' => 'md',          // sm | md | lg
+  'variant' => 'primary',
+  'size' => 'md',
   'href' => null,
-  'as' => null,            // 'a' para forzar <a>
+  'as' => null,
 ])
 
 @php
-$base = 'inline-flex items-center justify-center rounded-xl font-medium transition shadow-sm';
+$base = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-xl active:scale-[0.97]';
+
 $sizes = [
   'sm' => 'px-3 py-1.5 text-sm',
   'md' => 'px-4 py-2 text-sm',
@@ -15,10 +16,10 @@ $sizes = [
 ][$size];
 
 $variants = [
-  'primary'   => 'bg-zinc-900 text-white hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400/40',
-  'secondary' => 'bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50',
-  'ghost'     => 'bg-transparent text-zinc-700 hover:bg-zinc-100',
-  'danger'    => 'bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-400/40',
+  'primary'   => 'bg-brand text-white hover:bg-brand-700 focus-visible:ring-2 focus-visible:ring-brand/40 shadow-sm',
+  'secondary' => 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-gray-300/40 shadow-sm',
+  'ghost'     => 'bg-transparent text-gray-600 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-gray-300/40',
+  'danger'    => 'bg-red-600 text-white hover:bg-red-500 focus-visible:ring-2 focus-visible:ring-red-400/40 shadow-sm',
 ][$variant];
 
 $classes = "$base $sizes $variants";

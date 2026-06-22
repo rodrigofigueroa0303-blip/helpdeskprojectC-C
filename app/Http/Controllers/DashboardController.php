@@ -11,9 +11,12 @@ class DashboardController extends Controller
     {
         $statuses = config('helpdesk.statuses', ['Nuevo','En Progreso','Resuelto','Cerrado']);
 
-        // Conteo SOLO del usuario logueado
+        // Conteo del usuario logueado (creados + asignados)
         $mine = Ticket::select('status', DB::raw('COUNT(*) as c'))
-            ->where('user_id', auth()->id())
+            ->where(function($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('assigned_user_id', auth()->id());
+            })
             ->groupBy('status')
             ->pluck('c','status');
 

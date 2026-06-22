@@ -1,16 +1,29 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DU4eUvkL.css",
+    "file": "assets/app-uY6yxm3c.css",
     "src": "resources/css/app.css",
     "isEntry": true,
+    "name": "app",
     "names": [
       "app.css"
     ]
   },
+  "resources/js/admin-users.js": {
+    "file": "assets/admin-users-DQzB6Xnl.js",
+    "name": "admin-users",
+    "src": "resources/js/admin-users.js",
+    "isEntry": true
+  },
   "resources/js/app.js": {
-    "file": "assets/app-CXDpL9bK.js",
+    "file": "assets/app-CJ79M08N.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/password-manager.js": {
+    "file": "assets/password-manager-DgG4Q6W1.js",
+    "name": "password-manager",
+    "src": "resources/js/password-manager.js",
     "isEntry": true
   }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Department;
@@ -24,9 +25,12 @@ class TicketController extends Controller
     {
         $query = Ticket::with(['requester', 'assignee'])->latest();
 
-        // si NO es admin, solo sus propios tickets
+        // si NO es admin, solo sus propios tickets (creados o asignados)
         if (!auth()->user()->isAdmin()) {
-            $query->where('user_id', auth()->id());
+            $query->where(function($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('assigned_user_id', auth()->id());
+            });
         }
 
         // filtros
@@ -77,72 +81,74 @@ class TicketController extends Controller
         return view('tickets.create', compact('departments', 'categories', 'priorities'));
     }
 
-    public function store(Request $request)
-    {
-        $departments = Department::where('is_active', 1)->pluck('name')->toArray();
-        $categories  = TicketCategory::where('is_active', 1)->pluck('name')->toArray();
-        $priorities  = config('helpdesk.priorities', ['Baja', 'Media', 'Alta', 'Crítica']);
+public function store(Request $request)
+{
+    $departments = Department::where('is_active', 1)->pluck('name')->toArray();
+    $categories  = TicketCategory::where('is_active', 1)->pluck('name')->toArray();
+    $priorities  = config('helpdesk.priorities', ['Baja', 'Media', 'Alta', 'Crítica']);
 
-        $data = $request->validate([
-            'subject'     => 'required|string|max:255',
-            'department'  => ['nullable', 'string', 'max:255', Rule::in($departments)],
-            'priority'    => ['required', Rule::in($priorities)],
-            'description' => 'required|string',
-            'category'    => ['nullable', 'string', 'max:255', Rule::in($categories)],
-            'attachment'  => [
-                'nullable',
-                'file',
-                'max:25600',
-                'mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,zip,eml,msg',
-                'mimetypes:application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,message/rfc822',
-            ],
+    $data = $request->validate([
+        'subject'     => 'required|string|max:255',
+        'department'  => ['nullable', 'string', 'max:255', Rule::in($departments)],
+        'priority'    => ['required', Rule::in($priorities)],
+        'description' => 'required|string',
+        'category'    => ['nullable', 'string', 'max:255', Rule::in($categories)],
+        'attachment'  => [
+            'nullable',
+            'file',
+            'max:25600',
+            'mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,zip,eml,msg',
+            'mimetypes:application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,message/rfc822',
+        ],
+    ]);
+
+    // normalizar
+    $data['department'] = $data['department'] ?: null;
+    $data['category']   = $data['category']   ?: null;
+    $data['user_id']    = auth()->id();
+    $data['status']     = 'Nuevo';
+
+    $ticket = Ticket::create($data);
+
+    // comentario inicial (con o sin archivo)
+    if ($request->hasFile('attachment')) {
+        $file         = $request->file('attachment');
+        $originalName = $file->getClientOriginalName();
+        $storedPath   = $file->store('ticket_attachments/'.$ticket->id, 'public');
+
+        \App\Models\Comment::create([
+            'ticket_id'       => $ticket->id,
+            'user_id'         => auth()->id(),
+            'body'            => $data['description'],
+            'attachment_path' => $storedPath,
+            'attachment_name' => $originalName,
         ]);
-
-        // normalizar
-        $data['department'] = $data['department'] ?: null;
-        $data['category']   = $data['category']   ?: null;
-        $data['user_id']    = auth()->id();
-        $data['status']     = 'Nuevo';
-
-        $ticket = Ticket::create($data);
-
-        // comentario inicial (con o sin archivo)
-        if ($request->hasFile('attachment')) {
-            $file         = $request->file('attachment');
-            $originalName = $file->getClientOriginalName();
-            $storedPath   = $file->store('ticket_attachments/'.$ticket->id, 'public');
-
-            \App\Models\Comment::create([
-                'ticket_id'       => $ticket->id,
-                'user_id'         => auth()->id(),
-                'body'            => $data['description'],
-                'attachment_path' => $storedPath,
-                'attachment_name' => $originalName,
-            ]);
-        } else {
-            \App\Models\Comment::create([
-                'ticket_id' => $ticket->id,
-                'user_id'   => auth()->id(),
-                'body'      => $data['description'],
-            ]);
-        }
-
-        // ======= CORREOS: NUEVO TICKET =======
-        try {
-            $ticket->load('requester');
-            Mail::to('informatica@consultorescyc.cl')->send(new TicketCreatedMail($ticket));
-            if (!empty($ticket->requester?->email)) {
-                Mail::to($ticket->requester->email)->send(new TicketCreatedMail($ticket));
-            }
-        } catch (\Throwable $e) {
-            report($e); // no interrumpas la UX si falla SMTP
-        }
-
-        // Ir al show del ticket recién creado
-        return redirect()
-            ->route('tickets.show', $ticket)
-            ->with('ok', 'Ticket creado correctamente');
+    } else {
+        \App\Models\Comment::create([
+            'ticket_id' => $ticket->id,
+            'user_id'   => auth()->id(),
+            'body'      => $data['description'],
+        ]);
     }
+
+    // ======= CORREOS: NUEVO TICKET =======
+    try {
+        $ticket->load('requester');
+        Mail::to('informatica@consultorescyc.cl')->send(new TicketCreatedMail($ticket));
+        if (!empty($ticket->requester?->email)) {
+            Mail::to($ticket->requester->email)->send(new TicketCreatedMail($ticket));
+        }
+    } catch (\Throwable $e) {
+        report($e); // no interrumpas la UX si falla SMTP
+    }
+
+    // Redirigir al dashboard con SweetAlert
+    return redirect()
+        ->route('dashboard')
+        ->with('new_ticket', true);
+
+}
+
 
     public function show(Ticket $ticket)
     {
@@ -436,5 +442,21 @@ class TicketController extends Controller
 
         return back()->with('ok', 'Ticket actualizado');
     }
+    public function checkNew()
+    {
+        // Sumamos la condición de que el estado sea estrictamente 'Nuevo'
+        $count = Ticket::where('status', 'Nuevo')
+            ->where('created_at', '>', now()->subMinutes(60))
+            ->count();
+            
+        $latest = Ticket::latest()->first();
+
+        return response()->json([
+            'has_new' => $count > 0,
+            'count'   => $count,
+            'ticket'  => $latest ? $latest->subject : null,
+        ]);
+    }
+
 }
 

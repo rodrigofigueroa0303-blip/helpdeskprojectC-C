@@ -1,143 +1,142 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-[#0a2342] leading-tight">
-            {{ __('Nueva contraseña') }}
-        </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 class="font-bold text-2xl text-brand tracking-tight">
+                {{ __('Nueva contraseña') }}
+            </h2>
+            <a href="{{ route('admin.passwords.index') }}"
+               class="btn-secondary btn-sm inline-flex items-center gap-1.5 self-start sm:self-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Volver a la lista
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-8 bg-gray-50 min-h-screen">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl shadow-sm p-6">
+    <div class="py-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="card p-8 animate-slide-up">
+                
+                <div class="mb-8 border-b border-gray-100 pb-6">
+                    <h3 class="text-lg font-bold text-brand tracking-tight">Registrar Nueva Credencial</h3>
+                    <p class="text-sm text-gray-500 mt-1">Ingresa los datos para la nueva cuenta del sistema. Todos los campos obligatorios deben ser completados.</p>
+                </div>
+
                 <form method="POST" action="{{ route('admin.passwords.store') }}" class="space-y-6">
                     @csrf
 
-                    {{-- 1. Línea: tipo / aplicación --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                            <select name="tipo"
-                                    class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200"
-                                    required>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Tipo de Cuenta</label>
+                            <select name="tipo" class="select" required>
                                 <option value="">-- Seleccione --</option>
-                                <option value="Cuenta de correo" {{ old('tipo')=='Cuenta de correo' ? 'selected' : '' }}>Cuenta de correo</option>
-                                <option value="Cuenta de aplicación" {{ old('tipo')=='Cuenta de aplicación' ? 'selected' : '' }}>Cuenta de aplicación</option>
-                                <option value="Cuenta Bitácora" {{ old('tipo')=='Cuenta Bitácora' ? 'selected' : '' }}>Cuenta Bitácora</option>
-                                <option value="Cuenta Helpdesk" {{ old('tipo')=='Cuenta Helpdesk' ? 'selected' : '' }}>Cuenta Helpdesk</option>
-                                <option value="Otro" {{ old('tipo')=='Otro' ? 'selected' : '' }}>Otro</option>
+                                <option value="Cuenta de correo" @selected(old('tipo') == 'Cuenta de correo')>Cuenta de correo</option>
+                                <option value="Cuenta de aplicación" @selected(old('tipo') == 'Cuenta de aplicación')>Cuenta de aplicación</option>
+                                <option value="Cuenta Bitácora" @selected(old('tipo') == 'Cuenta Bitácora')>Cuenta de administración / Bitácora</option>
+                                <option value="Cuenta Helpdesk" @selected(old('tipo') == 'Cuenta Helpdesk')>Cuenta Helpdesk</option>
+                                <option value="Otro" @selected(old('tipo') == 'Otro')>Otro</option>
                             </select>
                             @error('tipo')
-                                <p class="text-sm text-rose-500 mt-1">{{ $message }}</p>
+                                <p class="text-xs text-red-500 mt-1.5 pl-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Aplicación</label>
-                            <select name="aplicacion"
-                                    class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200"
-                                    required>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Aplicación / Servicio</label>
+                            <select name="aplicacion" class="select" required>
                                 <option value="">-- Seleccione --</option>
-                                <option value="Outlook" {{ old('aplicacion')=='Outlook' ? 'selected' : '' }}>Outlook</option>
-                                <option value="Google Drive" {{ old('aplicacion')=='Google Drive' ? 'selected' : '' }}>Google Drive</option>
-                                <option value="Brevo" {{ old('aplicacion')=='Brevo' ? 'selected' : '' }}>Brevo</option>
-                                <option value="V2Network" {{ old('aplicacion')=='V2Network' ? 'selected' : '' }}>V2Network</option>
-                                <option value="Google Correo" {{ old('aplicacion')=='Google Correo' ? 'selected' : '' }}>Google Correo</option>
-                                <option value="Aula Virtual" {{ old('aplicacion')=='Aula Virtual' ? 'selected' : '' }}>Aula Virtual</option>
-                                <option value="Bitacora C&C" {{ old('aplicacion')=='Cuenta Bitacora' ? 'selected' : '' }}>Bitácora C&C</option>
-                                <option value="Otro" {{ old('aplicacion')=='Otro' ? 'selected' : '' }}>Otro</option>
+                                <option value="Outlook" @selected(old('aplicacion') == 'Outlook')>Outlook</option>
+                                <option value="Google Drive" @selected(old('aplicacion') == 'Google Drive')>Google Drive</option>
+                                <option value="Brevo" @selected(old('aplicacion') == 'Brevo')>Brevo</option>
+                                <option value="V2Network" @selected(old('aplicacion') == 'V2Network')>V2Network</option>
+                                <option value="Google Correo" @selected(old('aplicacion') == 'Google Correo')>Google Correo</option>
+                                <option value="Aula Virtual" @selected(old('aplicacion') == 'Aula Virtual')>Aula Virtual</option>
+                                <option value="Bitacora C&C" @selected(old('aplicacion') == 'Cuenta Bitacora')>Bitácora C&C</option>
+                                <option value="Otro" @selected(old('aplicacion') == 'Otro')>Otro</option>
                             </select>
                             @error('aplicacion')
-                                <p class="text-sm text-rose-500 mt-1">{{ $message }}</p>
+                                <p class="text-xs text-red-500 mt-1.5 pl-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
-                    </div>
 
-                    {{-- 2. Línea: estado / usuario --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                            <select name="estado"
-                                    class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200">
-                                <option value="Nuevo" {{ old('estado')=='Nuevo' ? 'selected' : '' }}>Nuevo</option>
-                                <option value="Eliminado" {{ old('estado')=='Eliminado' ? 'selected' : '' }}>Eliminado</option>
-                                <option value="Restringido" {{ old('estado')=='Restringido' ? 'selected' : '' }}>Restringido</option>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Estado Inicial</label>
+                            <select name="estado" class="select">
+                                <option value="Nuevo" @selected(old('estado') == 'Nuevo' || !old('estado'))>Nuevo</option>
+                                <option value="Eliminado" @selected(old('estado') == 'Eliminado')>Eliminado</option>
+                                <option value="Restringido" @selected(old('estado') == 'Restringido')>Restringido</option>
                             </select>
                             @error('estado')
-                                <p class="text-sm text-rose-500 mt-1">{{ $message }}</p>
+                                <p class="text-xs text-red-500 mt-1.5 pl-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nombre de Usuario</label>
                             <input type="text" name="usuario"
                                    value="{{ old('usuario', auth()->user()->name) }}"
-                                   class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200">
+                                   class="input"
+                                   placeholder="usuario">
                             @error('usuario')
-                                <p class="text-sm text-rose-500 mt-1">{{ $message }}</p>
+                                <p class="text-xs text-red-500 mt-1.5 pl-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
-                    </div>
 
-                    {{-- 3. Línea: correo / contraseña --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Correo Electrónico Asociado</label>
                             <input type="email" name="correo"
                                    value="{{ old('correo') }}"
-                                   class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200"
+                                   class="input"
                                    placeholder="usuario@consultorescyc.cl">
                             @error('correo')
-                                <p class="text-sm text-rose-500 mt-1">{{ $message }}</p>
+                                <p class="text-xs text-red-500 mt-1.5 pl-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Contraseña de Acceso</label>
                             <input type="text" name="password"
                                    value="{{ old('password') }}"
-                                   class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200"
-                                   placeholder="Prueba123+"
+                                   class="input font-mono"
+                                   placeholder="Ingresa clave segura"
                                    required>
                             @error('password')
-                                <p class="text-sm text-rose-500 mt-1">{{ $message }}</p>
+                                <p class="text-xs text-red-500 mt-1.5 pl-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
-                    </div>
 
-                    {{-- 4. Línea: fechas (solo info) --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de creación</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Fecha de creación</label>
                             <input type="text"
-                                   class="w-full rounded-xl border-gray-200 bg-gray-100"
+                                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-400 cursor-not-allowed select-none outline-none"
                                    value="{{ now()->format('d-m-Y') }}"
                                    readonly>
-                            <p class="text-[11px] text-gray-400 mt-1">Se guarda automáticamente.</p>
+                            <p class="text-[11px] text-gray-400 mt-1 pl-1">Se generará de manera automática hoy.</p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de eliminación</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Fecha de eliminación</label>
                             <input type="text"
-                                   class="w-full rounded-xl border-gray-200 bg-gray-100"
+                                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-400 cursor-not-allowed select-none outline-none"
                                    value="—"
                                    readonly>
-                            <p class="text-[11px] text-gray-400 mt-1">Solo se llenará cuando se marque como eliminada.</p>
+                            <p class="text-[11px] text-gray-400 mt-1 pl-1">Se llenará al cambiar el estado a eliminado.</p>
                         </div>
                     </div>
 
-                    {{-- 5. Observaciones --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
+                    <div class="pt-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Observaciones / Notas Adicionales</label>
                         <textarea name="observaciones" rows="4"
-                                  class="w-full rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-200"
-                                  placeholder="Creación de cuenta de prueba, cambio de hosting, etc.">{{ old('observaciones') }}</textarea>
+                                  class="input resize-none"
+                                  placeholder="Detalles sobre el uso de esta cuenta, alcances de prueba, cambios de infraestructura o hosting asociados.">{{ old('observaciones') }}</textarea>
                     </div>
 
-                    {{-- Botones --}}
-                    <div class="flex justify-end gap-3 pt-2">
-                        <a href="{{ route('admin.passwords.index') }}"
-                           class="px-4 py-2 rounded-xl border hover:bg-gray-50">Volver</a>
-                        <button class="px-5 py-2 rounded-xl bg-[#0D3B66] text-white hover:bg-[#0b3054]">
-                            Guardar
+                    <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8">
+                        <a href="{{ route('admin.passwords.index') }}" class="btn-secondary btn-md">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn-primary btn-md inline-flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Guardar Registro
                         </button>
                     </div>
 

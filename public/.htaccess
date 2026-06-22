@@ -38,3 +38,30 @@
     </Directory>
 
 </IfModule>
+# ----------------------------------------------------------------------
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+#------------------------------------------------------------------------
+<Files 403.shtml>
+order allow,deny
+allow from all
+</Files>
+deny from 217.154.234.180
+deny from 20.127.57.195
+deny from 72.146.6.194
+deny from 20.19.191.162
+deny from 103.82.21.232
+deny from 136.107.80.76
+deny from 20.46.120.13
+deny from 4.235.104.4
+deny from 35.246.114.142
+deny from 34.168.202.207
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php81” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php81 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit

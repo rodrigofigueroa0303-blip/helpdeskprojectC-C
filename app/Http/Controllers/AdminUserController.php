@@ -4,126 +4,133 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 class AdminUserController extends Controller
 {
     /**
-     * Lista de usuarios (se usa en el panel admin).
+     * Muestra el dashboard de administraci贸n con la lista de usuarios.
+     * Esto mapea directamente a la URL /admin (HTTP GET)
      */
-    public function index()
+    public function dashboard(Request $request)
     {
-        $users = User::orderBy('id')->get();
+        $query = User::query();
+
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function ($qry) use ($q) {
+                $qry->where('name', 'like', "%$q%")
+                    ->orWhere('email', 'like', "%$q%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(10)->withQueryString();
+        
         return view('admin.dashboard', compact('users'));
     }
 
     /**
-     * Crear usuario desde el formulario del panel admin.
+     * Muestra la lista de usuarios.
      */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'role'     => ['required', Rule::in(['admin','user'])],
-        ]);
+        $query = User::query();
 
-        User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => $data['role'],
-        ]);
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function ($qry) use ($q) {
+                $qry->where('name', 'like', "%$q%")
+                    ->orWhere('email', 'like', "%$q%");
+            });
+        }
 
-        return back()->with('ok', 'Usuario creado correctamente.');
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(10)->withQueryString();
+        return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Formulario de edición separado.
+     * Muestra el formulario para crear un nuevo usuario.
+     */
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Redirige al dashboard (la edici贸n se hace v铆a modal).
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        return redirect()->route('admin.dashboard');
     }
 
     /**
-     * Guardar cambios del usuario.
+     * Registra un nuevo usuario desde el formulario del Dashboard.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role'     => 'required|string|in:user,admin',
+        ]);
+
+        User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'role'     => $request->role,
+        ]);
+
+        return redirect()->route('admin.dashboard')->with('ok', 'Usuario creado exitosamente.');
+    }
+
+    /**
+     * Actualiza un usuario existente (llamado desde el Modal de Edici贸n).
      */
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role'     => ['required', Rule::in(['admin','user'])],
-            'password' => ['nullable', 'string', 'min:8'],
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role'  => 'required|string|in:user,admin',
         ]);
 
-        // Evitar que el admin cambie su propio rol
-        if ((int) $user->id === (int) auth()->id()) {
-            unset($data['role']);
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->role = $request->role;
+
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'string|min:8']);
+            $user->password = Hash::make($request->password);
         }
 
-        if (!empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
-        }
+        $user->save();
 
-        $user->update($data);
-
-        return redirect()->route('admin.dashboard')->with('ok', 'Usuario actualizado correctamente.');
+        return redirect()->route('admin.dashboard')->with('ok', 'Usuario actualizado con 茅xito.');
     }
 
+
     /**
-     * Eliminar usuario.
+     * Elimina un usuario (llamado desde el Modal de Confirmaci贸n).
      */
     public function destroy(User $user)
     {
-        $current = auth()->user();
-
-        // Solo un admin puede eliminar usuarios
-        if (!$current || !$current->isAdmin()) {
-            abort(403);
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.dashboard')->with('error', 'No puedes eliminar tu propia cuenta en sesi贸n.');
         }
 
-        // Evitar que un admin se elimine a sí mismo
-        if ((int) $user->id === (int) $current->id) {
-            return back()->with('error', 'No puedes eliminar tu propio usuario.');
-        }
+        $user->delete();
 
-        // Contar relaciones (por seguridad; si realmente no tiene, serán 0)
-        $ticketsCreados  = $user->ticketsCreated()->count();
-        $ticketsAsignado = $user->ticketsAssigned()->count();
-        $comentarios     = $user->comments()->count();
-
-        if ($ticketsCreados > 0 || $ticketsAsignado > 0 || $comentarios > 0) {
-            $msg = 'No se puede eliminar al usuario porque tiene registros asociados: '
-                . $ticketsCreados . ' ticket(s) creados, '
-                . $ticketsAsignado . ' ticket(s) asignado(s) y '
-                . $comentarios . ' comentario(s).';
-
-            return back()->with('error', $msg);
-        }
-
-        try {
-            $user->delete();
-        } catch (\Throwable $e) {
-            Log::error('Error al eliminar usuario en AdminUserController@destroy', [
-                'user_to_delete_id' => $user->id,
-                'current_user_id'   => $current->id,
-                'exception'         => $e->getMessage(),
-            ]);
-
-            return back()->with(
-                'error',
-                'No se pudo eliminar el usuario (revisa el log para más detalles).'
-            );
-        }
-
-        return back()->with('ok', 'Usuario eliminado correctamente.');
+        return redirect()->route('admin.dashboard')->with('ok', 'Usuario eliminado correctamente.');
     }
 }
-

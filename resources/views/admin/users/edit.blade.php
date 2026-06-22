@@ -1,17 +1,22 @@
 <x-app-layout>
   <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-      {{ __('Editar usuario') }}
-    </h2>
+    <div class="flex items-center justify-between">
+      <h2 class="font-bold text-2xl text-brand tracking-tight">
+        {{ __('Editar usuario') }}
+      </h2>
+      <a href="{{ route('admin.users.index') }}" class="btn-secondary btn-md inline-flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        Volver
+      </a>
+    </div>
   </x-slot>
 
-  <div class="py-12">
+  <div class="py-8">
     <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+      <div class="card p-6 animate-slide-up">
 
-        {{-- Errores de validación --}}
         @if ($errors->any())
-          <div class="mb-4 rounded-lg bg-red-100 text-red-800 px-4 py-2">
+          <div class="alert-error mb-4">
             <ul class="list-disc list-inside">
               @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -25,40 +30,36 @@
           @method('PUT')
 
           <div>
-            <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input name="name" value="{{ old('name', $user->name) }}"
-                   class="border rounded-xl p-2 w-full" required>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
+            <input name="name" value="{{ old('name', $user->name) }}" class="input" required>
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Email</label>
-            <input type="email" name="email" value="{{ old('email', $user->email) }}"
-                   class="border rounded-xl p-2 w-full" required>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <input type="email" name="email" value="{{ old('email', $user->email) }}" class="input" required>
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Rol</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Rol</label>
             @php $isMe = $user->id === auth()->id(); @endphp
-            <select name="role" class="border rounded-xl p-2 w-full" {{ $isMe ? 'disabled' : '' }}>
-              <option value="user"  @selected(old('role', $user->role) === 'user')>user</option>
+            <select name="role" class="select" {{ $isMe ? 'disabled' : '' }}>
+              <option value="user" @selected(old('role', $user->role) === 'user')>user</option>
               <option value="admin" @selected(old('role', $user->role) === 'admin')>admin</option>
             </select>
-            {{-- Si está deshabilitado (cuando edito mi propio usuario), envío el valor igual --}}
             @if($isMe)
               <input type="hidden" name="role" value="{{ $user->role }}">
-              <p class="text-xs text-zinc-500 mt-1">No puedes cambiar tu propio rol.</p>
+              <p class="text-xs text-gray-500 mt-1">No puedes cambiar tu propio rol.</p>
             @endif
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Password (opcional)</label>
-            <input type="password" name="password" class="border rounded-xl p-2 w-full"
-                   placeholder="Dejar en blanco para no cambiar">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Password (opcional)</label>
+            <input type="password" name="password" class="input" placeholder="Dejar en blanco para no cambiar">
           </div>
 
-          <div class="flex gap-2">
-            <button class="px-4 py-2 rounded-xl bg-zinc-900 text-white">Guardar</button>
-            <a href="{{ route('admin.users.index') }}" class="px-4 py-2 rounded-xl border">Cancelar</a>
+          <div class="flex gap-2 pt-2">
+            <button class="btn-primary btn-md">Guardar</button>
+            <a href="{{ route('admin.users.index') }}" class="btn-secondary btn-md">Cancelar</a>
           </div>
         </form>
 

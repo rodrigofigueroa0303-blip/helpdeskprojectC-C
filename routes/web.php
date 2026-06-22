@@ -10,7 +10,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\PasswordEntryController; // 👈 NUEVO
+use App\Http\Controllers\PasswordEntryController;
 
 // Landing
 Route::get('/', function (){
@@ -40,6 +40,11 @@ Route::middleware('auth')->group(function () {
     // Descarga de adjuntos de comentarios
     Route::get('/comments/{comment}/download', [CommentController::class, 'download'])
         ->name('comments.download');
+        
+    // API para revisar tickets nuevos cada cierto tiempo
+    Route::get('/api/check-new-tickets', [TicketController::class, 'checkNew'])
+        ->middleware('auth')
+        ->name('tickets.checkNew');
 
     // ======================
     // SOLO ADMIN
@@ -50,10 +55,11 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
 
             // Dashboard Admin
-            Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+            Route::get('/', [AdminUserController::class, 'dashboard'])->name('dashboard');
 
             // Gestión de usuarios (CRUD)
             Route::get('/users',              [AdminUserController::class, 'index'])->name('users.index');
+            Route::get('/users/create',      [AdminUserController::class, 'create'])->name('users.create');
             Route::post('/users',             [AdminUserController::class, 'store'])->name('users.store');
             Route::get('/users/{user}/edit',  [AdminUserController::class, 'edit'])->name('users.edit');
             Route::put('/users/{user}',       [AdminUserController::class, 'update'])->name('users.update');
@@ -65,7 +71,6 @@ Route::middleware('auth')->group(function () {
             //Route::patch('/tickets/{ticket}/assign', [TicketController::class, 'assign'])
             //    ->name('tickets.assign');
 
-            // 👇 NUEVA ruta combinada
             Route::patch('/tickets/{ticket}/admin-update', [TicketController::class, 'adminUpdate'])
                 ->name('tickets.adminUpdate');
 
@@ -96,13 +101,6 @@ Route::middleware('auth')->group(function () {
             Route::put('/passwords/{password}/baja', [PasswordEntryController::class, 'darDeBaja'])
                 ->name('passwords.baja');
 
-            // Tendrás:
-            // GET    /admin/passwords            -> admin.passwords.index
-            // GET    /admin/passwords/create     -> admin.passwords.create
-            // POST   /admin/passwords            -> admin.passwords.store
-            // GET    /admin/passwords/{id}/edit  -> admin.passwords.edit
-            // PUT    /admin/passwords/{id}       -> admin.passwords.update
-            // DELETE /admin/passwords/{id}       -> admin.passwords.destroy
         });
 });
 
