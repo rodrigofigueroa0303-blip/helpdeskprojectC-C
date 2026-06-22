@@ -98,10 +98,6 @@ git commit -m "Descripción de mis cambios"
 git push origin mi-rama
 Abre un Pull Request en GitHub para fusionar tu rama en main.
 
-📌 Notas
-El archivo .env no se sube a GitHub, cada desarrollador debe configurar el suyo.
-
-No subas vendor/ ni node_modules/ (están ignorados en .gitignore).
 
 🖥️ Tecnologías usadas
 Laravel 12 (PHP)
